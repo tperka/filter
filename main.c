@@ -4,6 +4,8 @@
 #include "filter.h"
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 int main(int argc, char **argv){
    ALLEGRO_DISPLAY *display = NULL;
    ALLEGRO_BITMAP  *image   = NULL;
@@ -65,8 +67,10 @@ int main(int argc, char **argv){
    
    
    al_flip_display();
-
+   region = al_lock_bitmap(image, ALLEGRO_PIXEL_FORMAT_ANY_24_NO_ALPHA, ALLEGRO_LOCK_READWRITE);
    unsigned char* pixelBuffer = NULL;
+   unsigned char* bufferCopy = malloc(-region->pitch*HEIGHT);
+   al_unlock_bitmap(image);
    while(1)
    {
       ALLEGRO_EVENT ev;
@@ -80,8 +84,8 @@ int main(int argc, char **argv){
          region = al_lock_bitmap(image, ALLEGRO_PIXEL_FORMAT_ANY_24_NO_ALPHA, ALLEGRO_LOCK_READWRITE);
          pixelBuffer = (unsigned char*) region -> data;
 			pixelBuffer -= (-region->pitch * (HEIGHT-1));
-   
-         pixelBuffer = filter(pixelBuffer, -region->pitch, HEIGHT, ev.mouse.x, HEIGHT-ev.mouse.y);
+         memcpy(bufferCopy, pixelBuffer, -region->pitch*HEIGHT);
+         filter(pixelBuffer,bufferCopy, -region->pitch/3, HEIGHT, ev.mouse.x, HEIGHT-ev.mouse.y); //region->pitch/3, bo padding sobie ręcznie dopiszę
          al_unlock_bitmap(image);
          al_draw_bitmap(image, 0,0,0);
          al_flip_display();
